@@ -1,0 +1,42 @@
+{
+  "name": "passport-zitadel",
+  "version": "0.0.0-development",
+  "description": "Passport JS strategy for ZITADEL IDP",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "tsc -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com:buehler/node-passport-zitadel.git"
+  },
+  "keywords": [
+    "passport",
+    "oauth",
+    "oidc",
+    "zitadel",
+    "introspection",
+    "authentication",
+    "auth",
+    "authn"
+  ],
+  "author": "Christoph Bühler <cbuehler@rootd.ch>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/buehler/node-passport-zitadel/issues"
+  },
+  "homepage": "https://github.com/buehler/node-passport-zitadel#readme",
+  "devDependencies": {
+    "@types/node-rsa": "^1.1.1",
+    "@types/passport": "^1.0.11",
+    "typescript": "^4.8.3"
+  },
+  "dependencies": {
+    "axios": "^0.27.2",
+    "jose": "^4.9.3",
+    "node-rsa": "^1.1.1",
+    "openid-client": "^5.1.9"
+  }
+}
