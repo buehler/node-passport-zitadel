@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com:buehler/node-passport-zitadel.git"
+    "url": "git://github.com/buehler/node-passport-zitadel.git"
   },
   "keywords": [
     "passport",
