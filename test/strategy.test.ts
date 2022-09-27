@@ -109,3 +109,33 @@ test('authenticate the user against JWT Profile API project', (done) => {
 
   authenticate({ headers: { authorization: `bearer ${pat}` } }, {}, () => {});
 });
+
+test('fail with random access token on basic auth', (done) => {
+  const strategy = new ZitadelIntrospectionStrategy(basic);
+  const authenticate = passport.authenticate(strategy, (err, user: IntrospectionResponse, info) => {
+    try {
+      expect(err).toBeFalsy();
+      expect(user).toBe(false);
+      done();
+    } catch (e) {
+      done(e);
+    }
+  });
+
+  authenticate({ headers: { authorization: `bearer foobarbaz0123456789` } }, {}, () => {});
+});
+
+test('fail with random access token on JWT profile auth', (done) => {
+  const strategy = new ZitadelIntrospectionStrategy(jwt);
+  const authenticate = passport.authenticate(strategy, (err, user: IntrospectionResponse, info) => {
+    try {
+      expect(err).toBeFalsy();
+      expect(user).toBe(false);
+      done();
+    } catch (e) {
+      done(e);
+    }
+  });
+
+  authenticate({ headers: { authorization: `bearer foobarbaz0123456789` } }, {}, () => {});
+});

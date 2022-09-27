@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "dev": "tsc -w",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "test": "jest"
   },
   "repository": {
@@ -15,9 +15,9 @@
   },
   "keywords": [
     "passport",
+    "zitadel",
     "oauth",
     "oidc",
-    "zitadel",
     "introspection",
     "authentication",
     "auth",
@@ -29,6 +29,9 @@
     "url": "https://github.com/buehler/node-passport-zitadel/issues"
   },
   "homepage": "https://github.com/buehler/node-passport-zitadel#readme",
+  "files": [
+    "dist/**/*"
+  ],
   "devDependencies": {
     "@babel/core": "7.19.1",
     "@babel/preset-env": "7.19.1",
