@@ -30,15 +30,26 @@ export type ZitadelIntrospectionOptions = {
   authority: string;
   authorization: EndpointAuthoriztaion;
   discoveryEndpoint?: string;
+  issuer?: Issuer;
 };
 
 export class ZitadelIntrospectionStrategy extends Strategy {
   name = 'zitadel-introspection';
 
+  private issuer: Issuer | undefined;
   private introspect?: (token: string) => Promise<IntrospectionResponse>;
 
   constructor(private readonly options: ZitadelIntrospectionOptions) {
     super();
+    this.issuer = options.issuer;
+  }
+
+  public static async create(options: ZitadelIntrospectionOptions): Promise<ZitadelIntrospectionStrategy> {
+    const issuer = await Issuer.discover(options.discoveryEndpoint ?? options.authority);
+    options.issuer = issuer;
+    const strategy = new ZitadelIntrospectionStrategy(options);
+
+    return strategy;
   }
 
   private get clientId() {
@@ -73,8 +84,8 @@ export class ZitadelIntrospectionStrategy extends Strategy {
   }
 
   private async getIntrospecter() {
-    const issuer = await Issuer.discover(this.options.discoveryEndpoint ?? this.options.authority);
-    const introspectionEndpoint = issuer.metadata['introspection_endpoint'] as string;
+    if (!this.issuer) this.issuer = await Issuer.discover(this.options.discoveryEndpoint ?? this.options.authority);
+    const introspectionEndpoint = this.issuer.metadata['introspection_endpoint'] as string;
 
     let jwt = '';
     let lastCreated = 0;
