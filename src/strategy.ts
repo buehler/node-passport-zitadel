@@ -30,15 +30,29 @@ export type ZitadelIntrospectionOptions = {
   authority: string;
   authorization: EndpointAuthoriztaion;
   discoveryEndpoint?: string;
+  introspectionEndpoint?: string;
+  issuer?: Issuer;
 };
 
 export class ZitadelIntrospectionStrategy extends Strategy {
   name = 'zitadel-introspection';
 
+  private issuer: Issuer | undefined;
+  private introspectionEndpoint: string;
   private introspect?: (token: string) => Promise<IntrospectionResponse>;
 
   constructor(private readonly options: ZitadelIntrospectionOptions) {
     super();
+    this.issuer = options.issuer;
+    this.introspectionEndpoint = options.introspectionEndpoint || '';
+  }
+
+  public static async create(options: ZitadelIntrospectionOptions): Promise<ZitadelIntrospectionStrategy> {
+    const issuer = await Issuer.discover(options.discoveryEndpoint ?? options.authority);
+    options.issuer = issuer;
+    const strategy = new ZitadelIntrospectionStrategy(options);
+
+    return strategy;
   }
 
   private get clientId() {
@@ -73,8 +87,12 @@ export class ZitadelIntrospectionStrategy extends Strategy {
   }
 
   private async getIntrospecter() {
-    const issuer = await Issuer.discover(this.options.discoveryEndpoint ?? this.options.authority);
-    const introspectionEndpoint = issuer.metadata['introspection_endpoint'] as string;
+    if (!this.introspectionEndpoint) {
+      if (!this.issuer) {
+        this.issuer = await Issuer.discover(this.options.discoveryEndpoint ?? this.options.authority);
+      }
+      this.introspectionEndpoint = this.issuer.metadata['introspection_endpoint'] as string;
+    }
 
     let jwt = '';
     let lastCreated = 0;
@@ -114,7 +132,7 @@ export class ZitadelIntrospectionStrategy extends Strategy {
     return async (token: string) => {
       const payload = await getPayload(token);
 
-      const response = await axios.post(introspectionEndpoint, new URLSearchParams(payload), {
+      const response = await axios.post(this.introspectionEndpoint, new URLSearchParams(payload), {
         auth:
           this.options.authorization.type === 'basic'
             ? {
