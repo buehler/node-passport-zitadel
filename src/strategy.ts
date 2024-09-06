@@ -15,7 +15,7 @@ type ZitadelJwtProfile = {
   clientId: string;
 };
 
-type EndpointAuthoriztaion =
+type EndpointAuthorization =
   | {
       type: 'basic';
       clientId: string;
@@ -28,7 +28,7 @@ type EndpointAuthoriztaion =
 
 export type ZitadelIntrospectionOptions = {
   authority: string;
-  authorization: EndpointAuthoriztaion;
+  authorization: EndpointAuthorization;
   discoveryEndpoint?: string;
   introspectionEndpoint?: string;
   issuer?: Issuer;
