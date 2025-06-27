@@ -4,7 +4,7 @@ import { ParamsDictionary } from 'express-serve-static-core';
 import { importPKCS8, SignJWT } from 'jose';
 import NodeRSA from 'node-rsa';
 import { IntrospectionResponse, Issuer } from 'openid-client';
-import { Strategy } from 'passport';
+import { AuthenticateCallback, Strategy } from 'passport';
 import { ParsedQs } from 'qs';
 
 type ZitadelJwtProfile = {
@@ -26,6 +26,11 @@ type EndpointAuthorization =
       profile: ZitadelJwtProfile;
     };
 
+export type VerifyFunction = (
+  payload: IntrospectionResponse,
+  verified: AuthenticateCallback,
+) => void;
+
 export type ZitadelIntrospectionOptions = {
   authority: string;
   authorization: EndpointAuthorization;
@@ -41,16 +46,16 @@ export class ZitadelIntrospectionStrategy extends Strategy {
   private introspectionEndpoint: string;
   private introspect?: (token: string) => Promise<IntrospectionResponse>;
 
-  constructor(private readonly options: ZitadelIntrospectionOptions) {
+  constructor(private readonly options: ZitadelIntrospectionOptions, private readonly verify?: VerifyFunction) {
     super();
     this.issuer = options.issuer;
     this.introspectionEndpoint = options.introspectionEndpoint || '';
   }
 
-  public static async create(options: ZitadelIntrospectionOptions): Promise<ZitadelIntrospectionStrategy> {
+  public static async create(options: ZitadelIntrospectionOptions, verify?: VerifyFunction): Promise<ZitadelIntrospectionStrategy> {
     const issuer = await Issuer.discover(options.discoveryEndpoint ?? options.authority);
     options.issuer = issuer;
-    const strategy = new ZitadelIntrospectionStrategy(options);
+    const strategy = new ZitadelIntrospectionStrategy(options, verify);
 
     return strategy;
   }
@@ -80,6 +85,16 @@ export class ZitadelIntrospectionStrategy extends Strategy {
         return;
       }
 
+      const verified: AuthenticateCallback = (err, user, info) => {
+        if (err) return this.error(err)
+        if (!user) return this.fail(info)
+        return this.success(user)
+      };
+
+      if (this.verify) {
+        this.verify(result, verified);
+        return;
+      }
       this.success(result);
     } catch (e) {
       (this.error ?? console.error)(e);

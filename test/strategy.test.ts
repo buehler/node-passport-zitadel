@@ -139,3 +139,60 @@ test('fail with random access token on JWT profile auth', (done) => {
 
   authenticate({ headers: { authorization: `bearer foobarbaz0123456789` } }, {}, () => {});
 });
+
+test('verify function is called with payload and verified callback', (done) => {
+  const strategy = new ZitadelIntrospectionStrategy(basic, (payload, verified) => {
+    expect(payload).toBeDefined();
+    expect(verified).toBeDefined();
+    verified(null, payload);
+  });
+  const authenticate = passport.authenticate(strategy, (err, user: IntrospectionResponse, info) => {
+    try {
+      expect(err).toBeNull();
+      expect(user).toBeDefined();
+      done();
+    } catch (e) {
+      done(e);
+    }
+  });
+
+  authenticate({ headers: { authorization: `bearer ${pat}` } }, {}, () => {});
+});
+
+test('verify function can return an error', (done) => {
+  const strategy = new ZitadelIntrospectionStrategy(basic, (payload, verified) => {
+    verified(new Error('Test error'));
+  });
+  const authenticate = passport.authenticate(strategy, (err, user: IntrospectionResponse, info) => {
+    try {
+      expect(err).toBeDefined();
+      expect(err.message).toBe('Test error');
+      expect(user).toBeFalsy();
+      done();
+    } catch (e) {
+      done(e);
+    }
+  });
+
+  authenticate({ headers: { authorization: `bearer ${pat}` } }, {}, () => {});
+});
+
+test('verify function can return a custom user object', (done) => {
+  const strategy = new ZitadelIntrospectionStrategy(basic, (payload, verified) => {
+    const customUser = { id: payload.sub, name: 'Custom User' };
+    verified(null, customUser);
+  });
+  const authenticate = passport.authenticate(strategy, (err, user: IntrospectionResponse, info) => {
+    try {
+      expect(err).toBeNull();
+      expect(user).toBeDefined();
+      expect(user.id).toBe('180665971512443137');
+      expect(user.name).toBe('Custom User');
+      done();
+    } catch (e) {
+      done(e);
+    }
+  });
+
+  authenticate({ headers: { authorization: `bearer ${pat}` } }, {}, () => {});
+});
