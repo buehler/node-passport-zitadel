@@ -48,7 +48,7 @@
     "axios": "^1.0.0",
     "jose": "^5.0.0",
     "node-rsa": "^1.1.1",
-    "openid-client": "^5.1.9",
+    "openid-client": "^6.0.0",
     "passport": "^0.7.0"
   }
 }
